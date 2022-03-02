@@ -10,7 +10,7 @@ public:
 	GetMinDist();
 	~GetMinDist();
 	
-	vector<vector<double>> min_dist;
+	//vector<vector<double>> min_dist;
 
 	void CalcMinDist();
 	void ChooseDataSet();

@@ -93,6 +93,23 @@ double CalcMetrics::CalcNMI()
 	return NMI;
 }
 
+double CalcMetrics::CalcPurity()
+{
+	int sum = 0;
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		int max_com = 0;
+		for (int j = 0; j < Constants::K; ++j)
+		{
+			max_com = max(max_com, ns[j][i]);
+		}
+		sum += max_com;
+	}
+	double Purity = 1.0 * sum / Constants::NumOfNodes;
+	return Purity;
+}
+
+
 double CalcMetrics::CalcF(int IsPrivate)
 {
 	double F = 0.0;
@@ -100,9 +117,9 @@ double CalcMetrics::CalcF(int IsPrivate)
 	{
 		kMedian* km = new kMedian();
 		if (IsPrivate == 0)
-			F = km->CalcValueF(Constants::NonPrivateS);
+			F = km->CalcValueL(Constants::NonPrivateS);
 		else
-			F = km->CalcValueF(Constants::PrivateS);
+			F = km->CalcValueL(Constants::PrivateS);
 	}
 	else
 	{

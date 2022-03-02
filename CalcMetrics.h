@@ -15,6 +15,7 @@ public:
 	~CalcMetrics();
 	double CalcARI();
 	double CalcNMI();
+	double CalcPurity();
 	double CalcF(int IsPrivate);
 	vector<vector<int>> GetClusters(int IsPrivate);
 	void Calc_ns();

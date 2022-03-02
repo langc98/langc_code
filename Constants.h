@@ -17,7 +17,7 @@ public:
 	static vector<string> FileNamePrefix;
 	static vector<int> PrivateS;
 	static vector<int> NonPrivateS;
-	static vector<vector<double>> Graph;
+//	static vector<vector<double>> Graph;
 	static vector<vector<double>> MinDist;
 };
 

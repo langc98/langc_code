@@ -2,7 +2,7 @@
 
 GetMinDist::GetMinDist()
 {
-    min_dist = Constants::Graph;
+    //min_dist = Constants::Graph;
     FileName = Constants::FileNamePrefix[Constants::DataSet];
     //ChooseDataSet();
 }
@@ -19,22 +19,27 @@ void GetMinDist::CalcMinDist()
         {
             for (int j = 0; j < Constants::NumOfNodes; ++j) 
             {
-                if (min_dist[i][j] > min_dist[i][k] + min_dist[k][j]) 
+                //if (min_dist[i][j] > min_dist[i][k] + min_dist[k][j]) 
+                //{
+                //   min_dist[i][j] = min_dist[i][k] + min_dist[k][j];
+                //}
+                if (Constants::MinDist[i][j] > Constants::MinDist[i][k] + Constants::MinDist[k][j])
                 {
-                    min_dist[i][j] = min_dist[i][k] + min_dist[k][j];
+                    Constants::MinDist[i][j] = Constants::MinDist[i][k] + Constants::MinDist[k][j];
                 }
             }
         }
     }
-    Constants::MinDist = min_dist;
+    //Constants::MinDist = min_dist;
     string DataFile = "./data/MinDist_" + FileName + ".txt";
-    ofstream out(DataFile, ios::app);
+    ofstream out(DataFile, ios::out);
     for (int i = 0; i < Constants::NumOfNodes; ++i)
     {
         for (int j = i + 1; j < Constants::NumOfNodes; ++j)
         {
-            if(min_dist[i][j] < 100000)
-                out << i << " " << j << " " << min_dist[i][j] << endl;
+        //    if(min_dist[i][j] < 100000)
+        //        out << i << " " << j << " " << min_dist[i][j] << endl;
+            out << i << " " << j << " " << Constants::MinDist[i][j] << endl;
         }
     }
     out.close();

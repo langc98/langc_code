@@ -5,23 +5,24 @@ kCenter::kCenter() :ExponentialMechanism()
 	lambda = 1;
 }
 
+
 kCenter::~kCenter()
 {
 }
 
-void kCenter::GetSolution(int IsPrivate)
+void kCenter::GetSolution(int IsPrivate, double eps)
 {
 	
 	vector<int> S;
 	srand((unsigned)time(NULL));
 	int u = rand() % Constants::NumOfNodes;
 	S.push_back(u);
-	vector<pair<double, int>> OptionSet;
+	
 	for (int i = 1; i < Constants::K; ++i)
 	{
 		//double MinDist = 1e9;
 		int nS = S.size();
-		
+		vector<pair<double, int>> OptionSet;
 		for (int j = 0; j < Constants::NumOfNodes; ++j)
 		{
 			/*
@@ -53,9 +54,10 @@ void kCenter::GetSolution(int IsPrivate)
 			OptionSet.push_back(make_pair(MinDist, j));
 			//*/
 		}
-		u = -1;
+		u = -2;
+
 		if (IsPrivate) {
-			u = ChooseMaxPrivate(OptionSet, lambda, Constants::Eps);
+			u = ChooseMaxPrivate(OptionSet, lambda, eps);
 		}
 		else {
 			u = ChhooseMax(OptionSet);

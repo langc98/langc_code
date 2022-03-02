@@ -7,9 +7,9 @@ class kMedian :public ExponentialMechanism
 public:
 	kMedian();
 	~kMedian();
-	void GetSolution(int IsPrivate);
+	void GetSolution(int IsPrivate, double eps);
 	double CalcValueF(vector<int>& S);
-	double valueF;
+	double CalcValueL(vector<int>& S);
 	double lambda;
 };
 

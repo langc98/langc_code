@@ -7,7 +7,7 @@ class kCenter :public ExponentialMechanism
 public:
 	kCenter();
 	~kCenter();
-	void GetSolution(int IsPrivate);
+	void GetSolution(int IsPrivate, double eps);
 	double CalcValueF(vector<int>& S, int node);
 	double lambda;
 };

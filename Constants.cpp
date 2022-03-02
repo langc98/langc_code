@@ -17,5 +17,5 @@ int Constants::IsMinDist = 0;
 vector<string> Constants::FileNamePrefix = { "Hamsterster", "Facebook", "WikiVote", "CaHepTh", "CaHepPh","CaAstroPh", "NYroad" };
 vector<int> Constants::PrivateS;
 vector<int> Constants::NonPrivateS;
-vector<vector<double>> Constants::Graph;
+//vector<vector<double>> Constants::Graph;
 vector<vector<double>> Constants::MinDist;

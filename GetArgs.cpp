@@ -37,7 +37,7 @@ void GetArgs::ParseArgs(int argc, char** argv)
 	map<string, string> args;
 	InitArgs(argc, argv, args);
 
-	Constants::NumOfNodes = atoi(GetArg(args, "n").c_str());
+//	Constants::NumOfNodes = atoi(GetArg(args, "n").c_str());
 	Constants::Alg = atoi(GetArg(args, "alg").c_str());
 	Constants::DataSet = atoi(GetArg(args, "data").c_str());
 	Constants::K = atoi(GetArg(args, "k").c_str());
