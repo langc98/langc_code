@@ -37,19 +37,3 @@ kMedian:
 	nohup ./main3 -alg=2 -data=3 -md=1 -k=20 > h2.txt 2>&1 &
 	nohup ./main4 -alg=2 -data=4 -md=1 -k=20 > h2.txt 2>&1 &
 	
-DataPreprocess:
-	nohup ./gmd > h1.txt 2>&1 &
-```
-
-
-
-报错处理：ulimit -c unlimited
-
-gdb ./main core
-
-bt
-
-查找进程：ps -ef | grep main
-
-Linux下txt文件中出现^M，先vi打开，再输入 :%s/\r//g 替换
-
