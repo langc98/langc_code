@@ -13,104 +13,85 @@
 #include"GetArgs.h"
 #include"ExponentialMechanism.h"
 #include"CalcMetrics.h"
+#include"WriteToFile.h"
 
 using namespace std;
 
-
-
-
-
 int main(int argc, char* argv[])
 {
-    int NumOfEps = 10;
-    int NumOfRun = 5;
-    omp_set_num_threads(7);
+    int NumOfRun = 20;
 
     GetArgs* args = new GetArgs();
     args->ParseArgs(argc, argv);
-    
+    delete args;
+    vector<int> nums_nodes{ 4039,7115,10000 };
+    Constants::NumOfNodes = nums_nodes[Constants::DataSet];
+
     ReadFile* rf = new ReadFile();
     rf->GetMatrix();
-    /*
-    if (Constants::IsMinDist)
-    {
-        Constants::MinDist = Constants::Graph;
-    }
-    else
-    {
-        GetMinDist* gmd = new GetMinDist();
-        gmd->CalcMinDist();
-    }
-    */
-
+    delete rf;
     if (!Constants::IsMinDist) {
         GetMinDist* gmd = new GetMinDist();
         gmd->CalcMinDist();
+        delete gmd;
     }
+    Constants::Eps = Constants::Eps * 0.5;
+    double eps = Constants::Eps / Constants::K;
 
+    vector<double> res1(8, 0.0);
+    vector<double> res2(8, 0.0);
+    vector<vector<double>>ans1(8, vector<double>(NumOfRun, 0.0));
+    vector<vector<double>>ans2(8, vector<double>(NumOfRun, 0.0));
+
+    omp_set_num_threads(20);
     #pragma omp parallel for
-    for (int i = 1; i <= NumOfEps; ++i)
+    for (int j = 1; j <= NumOfRun; ++j)
     {
-    //    Constants::Eps = 0.5 * i;
-        double eps = 0.5 * i;
-
-        double ARI = 0.0;
-        double NMI = 0.0;
-        double Purity = 0.0;
-        vector<double> valueF = { 0.0,0.0 };
-
-        for (int j = 0; j < NumOfRun; ++j)
+        kCenter* kc = new kCenter();
+        kMedian* km = new kMedian();
+        CalcMetrics* cm = new CalcMetrics();
+        vector<int> PrivateS;
+        vector<int> NonPrivateS;
+        vector<int> PrivateSPre;
+        vector<int> NonPrivateSPre;
+        if (Constants::Alg <= 2)
         {
-            kCenter* kc = new kCenter();
-            kMedian* km = new kMedian();
-
-            switch (Constants::Alg)
-            {
-            case 1: //k-Center
-                kc->GetSolution(1, eps);
-                kc->GetSolution(0, eps);
-                break;
-            case 2: //k-Median
-                km->GetSolution(1, eps);
-                if(j==0)
-                    km->GetSolution(0, eps);
-                break;
-            default: //k-Center
-                kc->GetSolution(1, eps);
-                kc->GetSolution(0, eps);
-                break;
-            }
-
-            CalcMetrics* cm = new CalcMetrics();
-            ARI += cm->CalcARI();
-            NMI += cm->CalcNMI();
-            Purity += cm->CalcPurity();
-            for (int i = 0; i < 2; ++i)
-            {
-                valueF[i] += cm->CalcF(i);
-            }
+            //k-Center
+            kc->GetId(j);
+            PrivateS = kc->GetSolution(1, eps);
+            NonPrivateS = kc->GetSolution(0, eps);
+            cm->GetResults(PrivateS, NonPrivateS, ans1, j - 1);
         }
-
-        ARI /= NumOfRun;
-        NMI /= NumOfRun;
-        Purity /= NumOfRun;
-        for (int i = 0; i < 2; ++i)
+        else
         {
-            valueF[i] /= NumOfRun;
+            //k-Median
+            km->GetId(j);
+            PrivateS = km->GetSolution(1, eps);
+            NonPrivateS = km->GetSolution(0, eps);
+            PrivateSPre = km->GetSolution(1, eps, 0);
+            NonPrivateSPre = km->GetSolution(0, eps, 0);
+            cm->GetResults(PrivateS, NonPrivateS, ans1, j - 1);
+            cm->GetResults(PrivateSPre, NonPrivateSPre, ans2, j - 1);
         }
-        
-        string ResultFile = "./result/ResultFile_Data_" + to_string(Constants::DataSet)
-            + "_Alg_" + to_string(Constants::Alg)
-     //       + "_Eps_" + to_string((int)(Constants::Eps * 10))
-            + "_Eps_" + to_string((int)(eps * 10))
-            + "_K_" + to_string(Constants::K) + ".txt";
-        ofstream out(ResultFile, ios::out);
-     //   out << Constants::K << " " << Constants::Eps << " "
-        out << Constants::K << " " << eps << " " 
-            << ARI << " " << NMI << " " << Purity << " " 
-            << valueF[0] << " " << valueF[1] << endl;
-        out.close();
+        delete kc;
+        delete km;
+        delete cm;
     }
+    for (int t = 0; t < 8; ++t)
+    {
+        for (int r = 0; r < NumOfRun; ++r)
+        {
+            res1[t] += ans1[t][r];
+            res2[t] += ans2[t][r];
+        }
+        res1[t] /= NumOfRun;
+        res2[t] /= NumOfRun;
+    }
+    WriteToFile* wf = new WriteToFile();
+    wf->WriteFile(eps * Constants::K, res1, 1);
+    if (Constants::Alg >= 3)
+        wf->WriteFile(eps * Constants::K, res2, 0);
+    delete wf;
     return 0;
 }
 

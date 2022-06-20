@@ -15,11 +15,14 @@ public:
 	~CalcMetrics();
 	double CalcARI();
 	double CalcNMI();
+	double CalcDBI(vector<int>& S);
+	double CalcSCI(vector<int>& S);
+	double CalcDVI(vector<int>& S);
 	double CalcPurity();
-	double CalcF(int IsPrivate);
-	vector<vector<int>> GetClusters(int IsPrivate);
-	void Calc_ns();
-
+	double CalcF(vector<int>& S);
+	vector<vector<int>> GetClusters(vector<int>& S);
+	void Calc_ns(vector<int>& PrivateS, vector<int>& NonPrivates);
+	void GetResults(vector<int>& PrivateS, vector<int>& NonPrivateS, vector<vector<double>>& res, int pos);
 	vector<vector<int>> PrivateC;
 	vector<vector<int>> NonPrivateC;
 	vector<vector<int>> ns;

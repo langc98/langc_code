@@ -9,6 +9,7 @@ public:
 	Constants();
 	~Constants();
 	static double Eps;
+	static double Beta;
 	static int Alg;
 	static int DataSet;
 	static int NumOfNodes;
@@ -17,7 +18,9 @@ public:
 	static vector<string> FileNamePrefix;
 	static vector<int> PrivateS;
 	static vector<int> NonPrivateS;
-//	static vector<vector<double>> Graph;
+	static vector<int> PrivateSPre;
+	static vector<int> NonPrivateSPre;
 	static vector<vector<double>> MinDist;
+	static vector<int> StepSize;
 };
 

@@ -3,10 +3,10 @@
 
 CalcMetrics::CalcMetrics()
 {
-	PrivateC = GetClusters(1);
-	NonPrivateC = GetClusters(0);
+//	PrivateC = GetClusters(1,1);
+//	NonPrivateC = GetClusters(0,0);
 	ns.resize(Constants::K, vector<int>(Constants::K, 0));
-	Calc_ns();
+//	Calc_ns();
 }
 
 CalcMetrics::~CalcMetrics()
@@ -93,6 +93,155 @@ double CalcMetrics::CalcNMI()
 	return NMI;
 }
 
+double CalcMetrics::CalcDBI(vector<int>& S)
+{	
+	vector<double> R(Constants::K, 0.0);
+	
+	vector<vector<int>> C = GetClusters(S);
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		vector<int> Ci = C[i];
+		double SumDis = 0.0;
+		int nCi = Ci.size();
+		for (int u : Ci)
+		{
+			if (u == S[i])
+				continue;
+			SumDis += Constants::MinDist[u][S[i]];
+		}
+		R[i] = SumDis / nCi;
+	}
+	double sum = 0.0;
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		double ma = 0.0;
+		double value = 0.0;
+		for (int j = 0; j < Constants::K; ++j)
+		{
+			if (i == j)
+				continue;
+			value = (R[i] + R[j]) / Constants::MinDist[S[i]][S[j]];
+			if (ma < value)
+			{
+				ma = value;
+			}
+		}
+		sum += ma;
+	}
+	double DBI = sum / Constants::K;
+	return DBI;
+}
+
+double CalcMetrics::CalcSCI(vector<int>& S)
+{
+	vector<vector<int>> C = GetClusters(S);
+	map<int, double> a, b,s;
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		int n = C[i].size();
+		if (n == 1)
+		{
+			a[C[i][0]] = 0;
+			continue;
+		}
+		for (int ii = 0; ii < n; ++ii)
+		{
+			double sum = 0;
+			for (int jj = 0; jj < n; ++jj)
+			{
+				if (ii != jj)
+				{
+					sum = sum + Constants::MinDist[C[i][ii]][C[i][jj]];
+				}
+
+			}
+			sum = sum / (n - 1.0);
+			a[C[i][ii]] = sum;
+		}
+	}
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		
+		int ni = C[i].size();
+		for (int ii = 0; ii < ni; ++ii)
+		{
+			double dis = 1e5;
+			for (int j = 0; j < Constants::K; ++j)
+			{
+				if (i == j)
+					continue;
+
+				int nj = C[j].size();
+				double sum = 0;
+				for (int jj = 0; jj < nj; ++jj)
+				{
+					sum = sum + Constants::MinDist[C[i][ii]][C[j][jj]];
+				}
+				sum = sum / nj;
+				dis = min(dis, sum);
+			}
+			b[C[i][ii]] = dis;
+		}
+	}
+	double sum = 0;
+	int num = a.size();
+	int index = (Constants::Alg - 1) / 2;
+	for (int i = index; i < num; ++i)
+	{
+		sum = sum + (b[i] - a[i]) / max(a[i], b[i]);
+	}
+	sum = sum / (0.0 + num - index);
+	double SCI = sum;
+	return SCI;
+}
+
+double CalcMetrics::CalcDVI(vector<int>& S)
+{
+
+	vector<vector<int>> C = GetClusters(S);
+
+	double maxdis = 0;
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		int n = C[i].size();
+		for (int ii = 0; ii < n; ++ii)
+		{
+			for (int jj = 0; jj < n; ++jj)
+			{
+				if (ii == jj)
+					continue;
+				maxdis = max(maxdis, Constants::MinDist[C[i][ii]][C[i][jj]]);
+			}
+		}
+	}
+	double mindis = 1e5;
+	/*
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		for (int j = 0; j < Constants::K; ++j)
+		{
+			if (i == j)
+				continue;
+			mindis = min(mindis, Constants::MinDist[S[i]][S[j]]);
+		}
+	}
+	*/
+	for (int i = 0; i < Constants::K; ++i)
+	{
+		int ni = C[i].size();
+		for (int j = i+1; j < Constants::K; ++j)
+		{
+			int nj = C[j].size();
+			for(int ii=0;ii<ni;++ii)
+				for(int jj=0;jj<nj;++jj)
+					mindis = min(mindis, Constants::MinDist[C[i][ii]][C[j][jj]]);
+		}
+	}
+	double DVI = mindis / maxdis;
+	return DVI;
+}
+
+
 double CalcMetrics::CalcPurity()
 {
 	int sum = 0;
@@ -110,61 +259,28 @@ double CalcMetrics::CalcPurity()
 }
 
 
-double CalcMetrics::CalcF(int IsPrivate)
+double CalcMetrics::CalcF(vector<int>& S)
 {
 	double F = 0.0;
-	if (Constants::Alg == 2) //kMedian
+	if (Constants::Alg >= 3) //kMedian
 	{
 		kMedian* km = new kMedian();
-		if (IsPrivate == 0)
-			F = km->CalcValueL(Constants::NonPrivateS);
-		else
-			F = km->CalcValueL(Constants::PrivateS);
+		F = km->CalcValueL(S);
+		delete km;
 	}
 	else
 	{
 		kCenter* kc = new kCenter();
-		if (IsPrivate == 0)
-			F = kc->CalcValueF(Constants::NonPrivateS, -1);
-		else
-			F = kc->CalcValueF(Constants::PrivateS, -1);
+		F = kc->CalcValueF(S, -1);
+		delete kc;
 	}
-	/*
-	else if (Constants::Alg == 1) //kCenter
-	{
-		vector<int> S;
-		if (IsPrivate == 0)
-			S = Constants::NonPrivateS;
-		else
-			S = Constants::PrivateS;
-		double MaxDist = 0;
-		for (int j = 0; j < Constants::NumOfNodes; ++j)
-		{
-			for (int k = 0; k < Constants::K; ++k)
-			{
-				if (S[k] == j)
-					continue;
-				if (MaxDist < Constants::MinDist[j][S[k]])
-				{
-					MaxDist = Constants::MinDist[j][S[k]];
-				}
-			}
-		}
-		F = MaxDist;
-	}
-	*/
 	return F;
 }
 
-vector<vector<int>> CalcMetrics::GetClusters(int IsPrivate)
+vector<vector<int>> CalcMetrics::GetClusters(vector<int>& S)
 {
-	vector<int> S;
-	if (IsPrivate)
-		S = Constants::PrivateS;
-	else
-		S = Constants::NonPrivateS;
 	vector<vector<int>> C(Constants::K);
-	int index = Constants::Alg - 1;
+	int index = (Constants::Alg - 1) / 2;
 	for (int i = index; i < Constants::NumOfNodes; ++i)
 	{
 		double min_dist = 1e9;
@@ -186,8 +302,10 @@ vector<vector<int>> CalcMetrics::GetClusters(int IsPrivate)
 	return C;
 }
 
-void CalcMetrics::Calc_ns()
+void CalcMetrics::Calc_ns(vector<int>& PrivateS, vector<int>& NonPrivateS)
 {
+	PrivateC = GetClusters(PrivateS);
+	NonPrivateC = GetClusters(NonPrivateS);
 	for (int i = 0; i < Constants::K; ++i)
 	{
 		for (int j = 0; j < Constants::K; ++j)
@@ -199,4 +317,17 @@ void CalcMetrics::Calc_ns()
 			ns[i][j] = C.size();
 		}
 	}
+}
+
+void CalcMetrics::GetResults(vector<int>& PrivateS, vector<int>& NonPrivateS, vector<vector<double>>& res, int pos)
+{
+
+	res[0][pos] = CalcDBI(NonPrivateS);	//DBI
+	res[1][pos] = CalcDBI(PrivateS);	//DBI
+	res[2][pos] = CalcDVI(NonPrivateS);	//DVI
+	res[3][pos] = CalcDVI(PrivateS);	//DVI
+	res[4][pos] = CalcSCI(NonPrivateS);	//SCI
+	res[5][pos] = CalcSCI(PrivateS);	//SCI
+	res[6][pos] = CalcF(NonPrivateS);		//value F non-private
+	res[7][pos] = CalcF(PrivateS);		//value F private
 }

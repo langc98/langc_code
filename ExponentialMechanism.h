@@ -5,6 +5,7 @@
 #include<cmath>
 #include<ctime>
 #include<random>
+#include<omp.h>
 #include"Constants.h"
 
 using namespace std;
@@ -14,7 +15,7 @@ public:
 	ExponentialMechanism();
 	~ExponentialMechanism();
 
-	int ChooseMaxPrivate(vector<pair<double, int>>& OptionSet, double lambda, double eps);
-	int ChhooseMax(vector<pair<double, int>>& OptionSet);
+	pair<int, int> ChooseMaxPrivate(vector<pair<double, pair<int, int>>>& OptionSet, double lambda, double eps, int id);
+	pair<int, int> ChhooseMax(vector<pair<double, pair<int, int>>>& OptionSet);
 };
 

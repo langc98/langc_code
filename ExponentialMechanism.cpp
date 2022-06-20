@@ -9,11 +9,11 @@ ExponentialMechanism::~ExponentialMechanism()
 {
 }
 
-int ExponentialMechanism::ChooseMaxPrivate(vector<pair<double,int>>& OptionSet, double lambda, double eps)
+pair<int, int> ExponentialMechanism::ChooseMaxPrivate(vector<pair<double, pair<int, int>>>& OptionSet, double lambda, double eps, int id)
 {
-	int node = -1;
 	sort(OptionSet.begin(), OptionSet.end());
 	int size = OptionSet.size();
+	pair<int, int> node = OptionSet[size - 1].second;;
 	vector<double> entry(size, 0.0);
 	double sum = 0.0;
 	for (int i = 0; i < size; ++i)
@@ -22,12 +22,13 @@ int ExponentialMechanism::ChooseMaxPrivate(vector<pair<double,int>>& OptionSet, 
 		sum += entry[i];
 	}
 	for (int i = 0; i < size; ++i)
-		entry[i] /= sum;
-	//srand((unsigned)time(NULL));
-	//double r = 1.0 * (rand() % 1000) / 1000;
-	default_random_engine rn(time(NULL));
-	uniform_real_distribution<double> dis(0.0, 1.0);
-	double r = dis(rn);
+		entry[i] = entry[i] / sum;
+	srand((unsigned)time(0) - id * 3600);
+	double r = 1.0 * (rand() % 1000) / 1000;
+//	int id = omp_get_thread_num();
+//	default_random_engine rn((unsigned)time(0) - id * 3600);
+//	uniform_real_distribution<double> dis(0.0, 1.0);
+//	double r = dis(rn);
 	sum = 0.0;
 	for (int i = 0; i < size; ++i)
 	{
@@ -41,7 +42,7 @@ int ExponentialMechanism::ChooseMaxPrivate(vector<pair<double,int>>& OptionSet, 
 	return node;
 }
 
-int ExponentialMechanism::ChhooseMax(vector<pair<double, int>>& OptionSet)
+pair<int, int> ExponentialMechanism::ChhooseMax(vector<pair<double, pair<int, int>>>& OptionSet)
 {
 	sort(OptionSet.begin(), OptionSet.end());
 	int size = OptionSet.size();
